@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Management System</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        input {
+            margin: 5px;
+            padding: 10px;
+            width: 200px;
+        }
+        button {
+            padding: 10px;
+            margin: 5px;
+        }
+        table {
+            margin-top: 20px;
+            border-collapse: collapse;
+            width: 80%;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Employee Management System</h1>
+    <form id="employeeForm">
+        <input type="text" id="name" placeholder="Name" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="text" id="position" placeholder="Position" required>
+        <input type="number" id="salary" placeholder="Salary" required>
+        <input type="text" id="phone" placeholder="Phone Number" required>
+        <button type="submit">Add Employee</button>
+        <button type="button" id="clearData">Clear All Employees</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Position</th>
+                <th>Salary</th>
+                <th>Phone Number</th>
+            </tr>
+        </thead>
+        <tbody id="employeeList">
+            <!-- Employee rows will be dynamically added here -->
+        </tbody>
+    </table>
+
+    <script>
+        const form = document.getElementById('employeeForm');
+        const employeeList = document.getElementById('employeeList');
+        const clearDataButton = document.getElementById('clearData');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const position = document.getElementById('position').value;
+            const salary = document.getElementById('salary').value;
+            const phone = document.getElementById('phone').value;
+
+            const response = await fetch('/employees', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, email, position, salary, phone })
+            });
+
+            const newEmployee = await response.json();
+            displayEmployee(newEmployee);
+            form.reset();
+        });
+
+        clearDataButton.addEventListener('click', async () => {
+            await fetch('/employees', {
+                method: 'DELETE'
+            });
+            employeeList.innerHTML = '';
+        });
+
+        async function fetchEmployees() {
+            const response = await fetch('/employees');
+            const employees = await response.json();
+            employees.forEach(displayEmployee);
+        }
+
+        function displayEmployee(employee) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${employee.name}</td>
+                <td>${employee.email}</td>
+                <td>${employee.position}</td>
+                <td>${employee.salary}</td>
+                <td>${employee.phone}</td>
+            `;
+            employeeList.appendChild(row);
+        }
+
+        // Fetch existing employees on load
+        fetchEmployees();
+    </script>
+</body>
+</html>
